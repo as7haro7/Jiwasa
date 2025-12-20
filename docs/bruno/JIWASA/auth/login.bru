@@ -12,18 +12,18 @@ post {
 
 body:json {
   {
-    "email": "juan1@jiwasa.com",
+    "email": "erick@jiwasa.com",
     "password": "123456"
   }
-}
-
-settings {
-  encodeUrl: true
-  timeout: 0
 }
 
 script:post-response {
   if (res.status === 200) {
     bru.setVar("token", res.body.token);
   }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
 }
