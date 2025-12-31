@@ -125,6 +125,48 @@ router.get("/cercanos", getPlacesByProximity);
 /**
  * @swagger
  * /lugares:
+ *   get:
+ *     summary: Get all places
+ *     tags: [Places]
+ *     parameters:
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: Search term (name, address, food type)
+ *       - in: query
+ *         name: zona
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tipo
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: pageNumber
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of places
+ *   post:
+ *     summary: Create a new place (Admin only)
+ *     tags: [Places]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Place'
+ *     responses:
+ *       201:
+ *         description: Place created
+ *       401:
+ *         description: Not authorized
+ */
+router.route("/")
     .get(getPlaces)
     .post(protect, admin, createPlace);
 
