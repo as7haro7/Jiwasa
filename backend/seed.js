@@ -74,7 +74,7 @@ async function seed() {
     ]);
 
     // 2) Lugares
-    const [anticuchosRita, saltenasCentro, comedorLanza] = await Lugar.insertMany([
+    const [anticuchosRita, saltenasCentro, comedorLanza, cafeTypica, lasCholas, apiOruro] = await Lugar.insertMany([
       {
         propietarioId: donaRita._id,
         nombre: "Anticuchos Doña Rita",
@@ -83,10 +83,10 @@ async function seed() {
         zona: "Sopocachi",
         coordenadas: {
           type: "Point",
-          coordinates: [-68.1285, -16.5130] // Longitude, Latitude
+          coordinates: [-68.1285, -16.5130]
         },
         descripcion: "Puesto tradicional de anticuchos paceños con papita y ají de maní.",
-        tiposComida: ["anticuchos", "comida nocturna", "comida típica"],
+        tiposComida: ["anticuchos", "comida nocturna", "comida típica", "street food"],
         rangoPrecios: "bajo",
         horario: {
             lunes: { apertura: "18:00", cierre: "23:30", cerrado: false },
@@ -94,24 +94,22 @@ async function seed() {
             miercoles: { apertura: "18:00", cierre: "23:30", cerrado: false },
             jueves: { apertura: "18:00", cierre: "23:30", cerrado: false },
             viernes: { apertura: "18:00", cierre: "23:59", cerrado: false },
-            sabado: { apertura: "18:00", cierra: "23:59", cerrado: false },
+            sabado: { apertura: "18:00", cierre: "23:59", cerrado: false },
             domingo: { apertura: "19:00", cierre: "22:30", cerrado: true }
         },
-        fotos: [],
-        promedioRating: 4.7,
-        cantidadResenas: 3,
+        fotos: ["https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=800"],
+        promedioRating: 4.8,
+        cantidadResenas: 15,
         estado: "activo",
         destacado: true,
         nivelVisibilidad: "premium",
         telefonoContacto: "+59171111111",
         emailContacto: "rita.anticuchos@jiwasa.com",
         sitioWeb: "",
-        redesSociales: {
-          instagram: "https://instagram.com/anticuchos_dona_rita"
-        }
+        redesSociales: { instagram: "https://instagram.com/anticuchos_dona_rita" }
       },
       {
-        propietarioId: admin._id, // Assigning to admin as placeholder since null might fail if required=true in strict validatin, but Place says required=true. Let's use Admin or create one.
+        propietarioId: admin._id,
         nombre: "Salteñería Paceña La Salteña",
         tipo: "restaurante",
         direccion: "Calle Comercio esquina Ayacucho",
@@ -121,7 +119,7 @@ async function seed() {
           coordinates: [-68.1330, -16.4975]
         },
         descripcion: "Salteñas de pollo y carne con ají, jugosas y tradicionales.",
-        tiposComida: ["salteñas", "desayuno", "snack"],
+        tiposComida: ["salteñas", "desayuno", "snack", "típico"],
         rangoPrecios: "medio",
         horario: {
             lunes: { apertura: "08:00", cierre: "13:00", cerrado: false },
@@ -132,18 +130,16 @@ async function seed() {
             sabado: { apertura: "08:00", cierre: "12:00", cerrado: false },
             domingo: { apertura: "00:00", cierre: "00:00", cerrado: true }
         },
-        fotos: [],
-        promedioRating: 4.5,
-        cantidadResenas: 2,
+        fotos: ["https://images.unsplash.com/photo-1626804475297-411db7015403?w=800"], // Generic empanada/salteña
+        promedioRating: 4.6,
+        cantidadResenas: 42,
         estado: "activo",
         destacado: true,
         nivelVisibilidad: "patrocinado",
         telefonoContacto: "+59171234567",
         emailContacto: "contacto@lasaltena.com",
         sitioWeb: "https://lasaltena.com",
-        redesSociales: {
-          facebook: "https://facebook.com/lasaltena"
-        }
+        redesSociales: { facebook: "https://facebook.com/lasaltena" }
       },
       {
         propietarioId: admin._id,
@@ -153,23 +149,122 @@ async function seed() {
         zona: "Centro",
         coordenadas: {
           type: "Point",
-          coordinates: [-68.1322, -16.4990]
+          coordinates: [-68.1350, -16.4960]
         },
         descripcion: "Comidas típicas paceñas: sopas, segundos y sándwich de chorizo.",
-        tiposComida: ["almuerzo", "sopa de maní", "sándwich de chorizo", "plato paceño"],
+        tiposComida: ["almuerzo", "sopa de maní", "plato paceño", "fricase", "chairo"],
         rangoPrecios: "bajo",
         horario: {
-            lunes: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            martes: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            miercoles: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            jueves: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            viernes: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            sabado: { apertura: "11:30", cierre: "15:30", cerrado: false },
-            domingo: { apertura: "00:00", cierre: "00:00", cerrado: true }
+            lunes: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            martes: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            miercoles: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            jueves: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            viernes: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            sabado: { apertura: "07:00", cierre: "16:00", cerrado: false },
+            domingo: { apertura: "07:00", cierre: "14:00", cerrado: false }
         },
-        fotos: [],
-        promedioRating: 4.3,
-        cantidadResenas: 1,
+        fotos: ["https://images.unsplash.com/photo-1547592180-85f173990554?w=800"], // Soup/stew
+        promedioRating: 4.4,
+        cantidadResenas: 8,
+        estado: "activo",
+        destacado: false,
+        nivelVisibilidad: "normal",
+        telefonoContacto: "",
+        emailContacto: "",
+        sitioWeb: "",
+        redesSociales: {}
+      },
+      {
+        propietarioId: admin._id,
+        nombre: "Café Typica",
+        tipo: "café",
+        direccion: "Calle Enrique Peñaranda, San Miguel",
+        zona: "Sur",
+        coordenadas: {
+          type: "Point",
+          coordinates: [-68.0799, -16.5408]
+        },
+        descripcion: "Café de especialidad con ambiente vintage y postres artesanales.",
+        tiposComida: ["café", "postres", "jugos", "masitas"],
+        rangoPrecios: "medio",
+        horario: {
+            lunes: { apertura: "08:00", cierre: "22:00", cerrado: false },
+            martes: { apertura: "08:00", cierre: "22:00", cerrado: false },
+            miercoles: { apertura: "08:00", cierre: "22:00", cerrado: false },
+            jueves: { apertura: "08:00", cierre: "22:00", cerrado: false },
+            viernes: { apertura: "08:00", cierre: "22:00", cerrado: false },
+            sabado: { apertura: "09:00", cierre: "22:00", cerrado: false },
+            domingo: { apertura: "09:00", cierre: "21:00", cerrado: false }
+        },
+        fotos: ["https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800"],
+        promedioRating: 4.7,
+        cantidadResenas: 120,
+        estado: "activo",
+        destacado: true,
+        nivelVisibilidad: "normal",
+        telefonoContacto: "+5912222222",
+        emailContacto: "info@typica.com",
+        sitioWeb: "https://typicacafe.com",
+        redesSociales: { instagram: "https://instagram.com/typicacafe" }
+      },
+      {
+        propietarioId: admin._id,
+        nombre: "Las Cholas",
+        tipo: "callejero",
+        direccion: "Parque de La Florida, Calacoto",
+        zona: "Sur",
+        coordenadas: {
+          type: "Point",
+          coordinates: [-68.0876, -16.5385]
+        },
+        descripcion: "El tradicional sandwich de chola: cerdo al horno, escabeche y quirquiña.",
+        tiposComida: ["sandwich de chola", "típico", "comida rápida", "callejero"],
+        rangoPrecios: "medio",
+        horario: {
+            lunes: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            martes: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            miercoles: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            jueves: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            viernes: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            sabado: { apertura: "09:00", cierre: "18:00", cerrado: false },
+            domingo: { apertura: "09:00", cierre: "18:00", cerrado: false }
+        },
+        fotos: ["https://images.unsplash.com/photo-1550547660-d9450f859349?w=800"], // Sandbox/burger ish
+        promedioRating: 4.6,
+        cantidadResenas: 250,
+        estado: "activo",
+        destacado: true,
+        nivelVisibilidad: "premium",
+        telefonoContacto: "",
+        emailContacto: "",
+        sitioWeb: "",
+        redesSociales: {}
+      },
+      {
+        propietarioId: admin._id,
+        nombre: "Api Oruro",
+        tipo: "restaurante",
+        direccion: "Calle Murillo, Centro",
+        zona: "Centro",
+        coordenadas: {
+          type: "Point",
+          coordinates: [-68.1360, -16.5000]
+        },
+        descripcion: "El mejor api morado y blanco con pastel de queso inflado.",
+        tiposComida: ["api", "pastel", "desayuno", "cena", "típico"],
+        rangoPrecios: "bajo",
+        horario: {
+            lunes: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            martes: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            miercoles: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            jueves: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            viernes: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            sabado: { apertura: "07:00", cierre: "11:00", cerrado: false },
+            domingo: { apertura: "07:00", cierre: "11:00", cerrado: false }
+        },
+        fotos: ["https://images.unsplash.com/photo-1541167760496-1628856ab772?w=800"], // Coffee/drink ish
+        promedioRating: 4.5,
+        cantidadResenas: 30,
         estado: "activo",
         destacado: false,
         nivelVisibilidad: "normal",

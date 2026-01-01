@@ -103,7 +103,7 @@ const placeSchema = new mongoose.Schema(
         },
         tipo: {
             type: String,
-            enum: ["callejero", "mercado", "restaurante", "café", "otro"],
+            enum: ["callejero", "mercado", "restaurante", "café", "bar", "food_truck", "otro"],
             required: true,
         },
         direccion: {

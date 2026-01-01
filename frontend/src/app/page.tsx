@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import api from "@/lib/api";
-import { Search, MapPin, RefreshCw, X, Loader2 } from "lucide-react";
+import { Search, MapPin, RefreshCw, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OfferCard } from "@/components/features/home/OfferCard";
 import { PlaceListCard } from "@/components/features/home/PlaceListCard";
@@ -42,14 +42,9 @@ export default function Home() {
   const [distance, setDistance] = useState(2); // km
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const categories = [
-    { name: "Restaurantes", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80", color: "bg-orange-100" },
-    { name: "Callejero", image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80", color: "bg-yellow-100" },
-    { name: "Mercados", image: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=500&q=80", color: "bg-green-100" },
-    { name: "Cafés", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80", color: "bg-stone-100" },
-    { name: "Tradicional", image: "https://images.unsplash.com/photo-1574484284008-86d47dc6b674?w=500&q=80", color: "bg-red-100" },
-  ];
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -236,15 +231,68 @@ export default function Home() {
         {/* Categories Section */}
         <section>
             <h2 className="text-2xl font-bold mb-6">Explora por categorías</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {categories.map((cat) => (
-                    <Link href="#" key={cat.name} className="group">
-                        <div className={cn("rounded-sm aspect-4/3 relative overflow-hidden mb-2 shadow-sm transition-transform group-hover:-translate-y-1", cat.color)}>
-                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                           <span className="absolute bottom-3 left-3 font-bold text-white text-lg drop-shadow-md">{cat.name}</span>
-                        </div>
-                    </Link>
-                ))}
+            <div className="relative group">
+                <div 
+                    ref={scrollContainerRef}
+                    className="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pb-8 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar scroll-smooth"
+                >
+                    {[
+                    { name: "Restaurantes", type: "restaurante", description: "Experiencias gourmet", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80" },
+                    { name: "Cafés", type: "café", description: "Aromas y pausas", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80" },
+                    { name: "Bares", type: "bar", description: "Noches paceñas", image: "https://plus.unsplash.com/premium_photo-1661695810257-35142e1415ca?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+                    { name: "Food Trucks", type: "food_truck", description: "Innovación al paso", image: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=600&q=80" },
+                    { name: "Callejero", type: "callejero", description: "El alma de la ciudad", image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80" },
+                    { name: "Mercados", type: "mercado", description: "Frescura y tradición", image: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=600&q=80" },
+                    ].map((cat) => (
+                        <Link 
+                            href={`/search?tipo=${cat.type}`} 
+                            key={cat.name} 
+                            className="group/card flex-none w-[80vw] md:w-[32%] snap-center relative"
+                        >
+                        <div className="rounded-2xl h-[320px] relative overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out group-hover/card:-translate-y-2">
+                            {/* Background Image with Zoom Effect */}
+                            <img 
+                                    src={cat.image} 
+                                    alt={cat.name} 
+                                    className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition-transform duration-700" 
+                            />
+                            
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover/card:opacity-90 transition-opacity" />
+                            
+                            {/* Content */}
+                            <div className="absolute bottom-0 left-0 p-8 w-full transform translate-y-2 group-hover/card:translate-y-0 transition-transform duration-500">
+                                    <p className="text-emerald-400 font-medium tracking-wider uppercase text-xs mb-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover/card:translate-y-0">
+                                        Explorar {cat.name}
+                                    </p>
+                                    <h3 className="text-white text-4xl font-bold mb-2 tracking-tight">{cat.name}</h3>
+                                    <p className="text-zinc-300 text-lg font-medium">{cat.description}</p>
+                            </div>
+
+                            {/* Interactive Arrow Button */}
+                            <div className="absolute top-6 right-6 w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 group-hover/card:rotate-45">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                            </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+                
+                {/* Desktop Navigation Controls */}
+                <button 
+                    onClick={() => scrollContainerRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
+                    className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-black hover:bg-zinc-100 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                    aria-label="Scroll left"
+                >
+                    <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button 
+                    onClick={() => scrollContainerRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
+                    className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-black hover:bg-zinc-100 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                    aria-label="Scroll right"
+                >
+                    <ChevronRight className="w-6 h-6" />
+                </button>
             </div>
         </section>
 

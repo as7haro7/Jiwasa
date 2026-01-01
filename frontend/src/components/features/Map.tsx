@@ -119,12 +119,6 @@ const MapUpdater = ({ center, zoom, radius }: { center: [number, number], zoom: 
 };
 
 export default function Map({ places, userLocation, radius }: MapProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Memoize center calculation to prevent MapUpdater re-triggering on every render
   const { activeCenter, activeZoom, shouldUpdateView } = useMemo(() => {
       let center: [number, number] = [-16.5000, -68.1193]; // Default La Paz
@@ -145,14 +139,13 @@ export default function Map({ places, userLocation, radius }: MapProps) {
       return { activeCenter: center, activeZoom: zoom, shouldUpdateView: shouldUpdate };
   }, [userLocation, places]); // Dependencies
 
-  if (!mounted) {
-    return <div className="h-full w-full bg-zinc-100 animate-pulse rounded-lg flex items-center justify-center text-zinc-400">Cargando mapa...</div>;
-  }
-
+  // Removing internal mounted check as dynamic import in parent handles SSR
+  
   return (
     <MapContainer
       center={activeCenter}
       zoom={activeZoom}
+
       scrollWheelZoom={true}
       className="h-full w-full z-0 rounded-lg"
     >
