@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import api from "@/lib/api";
-import { Search, Star, Clock, MapPin, ArrowRight, Map as MapIcon, List } from "lucide-react";
+import { Search, MapPin, RefreshCw, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OfferCard } from "@/components/features/home/OfferCard";
 import { PlaceListCard } from "@/components/features/home/PlaceListCard";
@@ -34,9 +34,14 @@ interface Place {
 
 export default function Home() {
   const [places, setPlaces] = useState<Place[]>([]);
+  const [mapPlaces, setMapPlaces] = useState<Place[]>([]);
+  const [allMapPlaces, setAllMapPlaces] = useState<Place[]>([]); // Copy of full list
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showMap, setShowMap] = useState(false);
+  // showMap removed
+  const [distance, setDistance] = useState(2); // km
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const categories = [
     { name: "Restaurantes", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80", color: "bg-orange-100" },
@@ -47,18 +52,55 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    const fetchPlaces = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get("/lugares");
-        setPlaces(response.data.lugares || []);
+        const [placesRes, mapRes] = await Promise.all([
+          api.get("/lugares"),
+          api.get("/lugares/mapa")
+        ]);
+        
+        setPlaces(placesRes.data.places || []);
+        setMapPlaces(mapRes.data || []);
+        setAllMapPlaces(mapRes.data || []);
       } catch (error) {
-        console.error("Error fetching places:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchPlaces();
+    fetchData();
   }, []);
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) {
+        alert("Tu navegador no soporta geolocalización");
+        return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation([latitude, longitude]);
+            
+            try {
+                const response = await api.get("/lugares/cercanos", {
+                    params: { lat: latitude, lng: longitude, dist: distance }
+                });
+                setMapPlaces(response.data);
+            } catch (error) {
+                console.error("Error fetching nearby places:", error);
+            } finally {
+                setLocationLoading(false);
+            }
+        },
+        (error) => {
+            console.error("Geolocation error:", error);
+            setLocationLoading(false);
+            alert("No pudimos obtener tu ubicación. Verifica tus permisos.");
+        }
+    );
+  };
 
   const featuredPlaces = places.slice(0, 4); 
 
@@ -107,22 +149,88 @@ export default function Home() {
         
         {/* Toggle Map View for Mobile / Highlight for Desktop */}
          <section>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Explora La Paz</h2>
-                <Button 
-                    variant="outline" 
-                    onClick={() => setShowMap(!showMap)}
-                    className="flex items-center gap-2"
-                >
-                    {showMap ? <><List className="h-4 w-4"/> Ver Lista</> : <><MapIcon className="h-4 w-4"/> Ver en Mapa</>}
-                </Button>
+            <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
+                <div>
+                   <h2 className="text-2xl font-bold">Explora La Paz</h2>
+                   <p className="text-zinc-500 text-sm">Descubre lugares increíbles en el mapa.</p>
+                </div>
+                
+                <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-zinc-200 shadow-sm">
+                    <div className="flex flex-col px-2 w-32 md:w-48">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Radio</span>
+                            <span className="text-xs font-bold text-[#007068]">{distance} km</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="1" 
+                            max="20" 
+                            step="0.5"
+                            value={distance}
+                            onChange={(e) => setDistance(parseFloat(e.target.value))}
+                            className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#007068]"
+                        />
+                    </div>
+                    <div className="h-8 w-px bg-zinc-100 mx-1"></div>
+                    
+                    {userLocation ? (
+                        <div className="flex gap-2">
+                             <Button 
+                                size="sm"
+                                onClick={handleUseLocation} // Re-search with new distance
+                                disabled={locationLoading}
+                                className="text-xs h-8 bg-zinc-900 text-white hover:bg-zinc-800"
+                            >
+                                {locationLoading ? <Loader2 className="h-3 w-3 animate-spin"/> : <RefreshCw className="h-3 w-3"/>}
+                            </Button>
+                            <Button 
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                    setUserLocation(null);
+                                    setMapPlaces(allMapPlaces);
+                                }}
+                                className="text-xs h-8 text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button 
+                            size="sm"
+                            onClick={handleUseLocation}
+                            disabled={locationLoading}
+                            className={cn("text-xs h-8 bg-zinc-900 text-white hover:bg-zinc-800", locationLoading ? "opacity-80" : "")}
+                        >
+                            {locationLoading ? <><div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Buscar</> : <><MapPin className="h-3 w-3 mr-2"/> Cerca de mí</>}
+                        </Button>
+                    )}
+                </div>
             </div>
             
-            <div className={cn("transition-all duration-300 ease-in-out", showMap ? "block" : "hidden md:block")}>
-                 <div className="h-[400px] md:h-[500px] w-full rounded-xl overflow-hidden shadow-sm border border-zinc-200">
-                    <Map places={places} />
-                 </div>
+            <div className="h-[400px] md:h-[500px] w-full rounded-xl overflow-hidden shadow-sm border border-zinc-200 relative group">
+                <Map places={mapPlaces} userLocation={userLocation} radius={distance} />
+                {userLocation && (
+                    <div className="absolute top-4 right-4 z-[400] bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold text-blue-700 border border-blue-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
+                        <MapPin className="h-3 w-3 fill-blue-700"/> Ubicación actual
+                    </div>
+                )}
             </div>
+
+            {/* Optional: Show list of found places below map if filtering */}
+            {userLocation && mapPlaces.length > 0 && (
+                <div className="mt-8">
+                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-emerald-600"/> 
+                        {mapPlaces.length} lugares encontrados cerca de ti
+                     </h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {mapPlaces.slice(0, 4).map((place) => (
+                            <PlaceListCard key={place._id} place={place} />
+                        ))}
+                    </div>
+                </div>
+            )}
          </section>
 
         {/* Categories Section */}

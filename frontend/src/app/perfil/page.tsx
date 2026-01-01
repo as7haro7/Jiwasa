@@ -32,9 +32,21 @@ interface User {
   createdAt: string;
 }
 
+interface Favorite {
+  _id: string;
+  lugar: {
+    _id: string;
+    nombre: string;
+    tipo: string;
+    fotos: string[];
+    zona: string;
+  };
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -59,12 +71,17 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await api.get("/users/me");
-        setUser(response.data);
-        initializeForm(response.data);
+        const [userRes, favRes] = await Promise.all([
+             api.get("/users/me"),
+             api.get("/favoritos")
+        ]);
+        
+        setUser(userRes.data);
+        setFavorites(favRes.data);
+        initializeForm(userRes.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
-        router.push("/auth/login");
+        // router.push("/auth/login"); // Redirect might be annoying if just one call fails, handle gracefully
       } finally {
         setLoading(false);
       }
@@ -463,9 +480,28 @@ export default function ProfilePage() {
                </CardTitle>
              </CardHeader>
              <CardContent>
+               {favorites.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     {favorites.map((fav) => (
+                        <div key={fav._id} className="flex gap-4 p-3 rounded-lg border border-zinc-100 hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/lugares/${fav.lugar._id}`)}>
+                            <div className="h-20 w-20 bg-zinc-200 rounded-md shrink-0 overflow-hidden relative">
+                                {fav.lugar.fotos && fav.lugar.fotos[0] && (
+                                    <img src={fav.lugar.fotos[0]} alt={fav.lugar.nombre} className="object-cover w-full h-full" />
+                                )}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-sm truncate">{fav.lugar.nombre}</h4>
+                                <span className="text-xs text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-full inline-block mb-1">{fav.lugar.tipo}</span>
+                                <p className="text-xs text-zinc-500">{fav.lugar.zona}</p>
+                            </div>
+                        </div>
+                     ))}
+                  </div>
+               ) : (
                 <div className="h-32 bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-400 text-sm border border-dashed border-zinc-200">
                    Aquí aparecerán tus restaurantes guardados.
                 </div>
+               )}
              </CardContent>
           </Card>
         </div>
