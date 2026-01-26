@@ -1,43 +1,50 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db.js";
 
-import mongoose from "mongoose";
+class Review extends Model {}
 
-const reviewSchema = new mongoose.Schema(
+Review.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+        },
         usuarioId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
+            type: DataTypes.UUID,
+            allowNull: false,
         },
         lugarId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Place",
-            required: true,
+            type: DataTypes.UUID,
+            allowNull: false,
         },
         rating: {
-            type: Number,
-            required: true,
-            min: 1,
-            max: 5,
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            validate: {
+                min: 1,
+                max: 5,
+            },
         },
         comentario: {
-            type: String,
-            required: true,
+            type: DataTypes.TEXT,
+            allowNull: false,
         },
-        fotos: [
-            {
-                type: String,
-            },
-        ],
+        fotos: {
+            type: DataTypes.ARRAY(DataTypes.STRING),
+            defaultValue: [],
+        },
         util: {
-            type: Number,
-            default: 0,
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
         },
     },
     {
+        sequelize,
+        modelName: "Review",
+        tableName: "Reviews",
         timestamps: true,
     }
 );
-
-const Review = mongoose.model("Review", reviewSchema);
 
 export default Review;

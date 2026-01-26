@@ -1,43 +1,46 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db.js";
 
-import mongoose from "mongoose";
+class Report extends Model {}
 
-const reportSchema = new mongoose.Schema(
+Report.init(
   {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     tipo: {
-      type: String,
-      enum: ["lugar", "reseña"],
-      required: true,
+      type: DataTypes.ENUM("lugar", "reseña"),
+      allowNull: false,
     },
     lugarId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Place",
+      type: DataTypes.UUID,
+      allowNull: true,
     },
     reseñaId: {
-      // Use "reviewId" or "resenaId"? Keeping consistent with "reseña" in docs but "review" in models?
-      // Model is Review.js
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Review",
+      type: DataTypes.UUID,
+      allowNull: true,
     },
     usuarioId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     motivo: {
-      type: String,
-      required: true,
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
     estado: {
-      type: String,
-      enum: ["pendiente", "resuelto", "descartado"],
-      default: "pendiente",
+      type: DataTypes.ENUM("pendiente", "resuelto", "descartado"),
+      defaultValue: "pendiente",
     },
   },
   {
+    sequelize,
+    modelName: "Report",
+    tableName: "Reports",
     timestamps: true,
   }
 );
-
-const Report = mongoose.model("Report", reportSchema);
 
 export default Report;

@@ -46,9 +46,9 @@ router.post("/", upload.single("image"), (req, res) => {
         return res.status(400).send({ message: "No se subió ningún archivo" });
     }
     // Return the path relative to the server
-    // Assuming we serve 'uploads' folder dynamically
+    // Cloudinary returns the full URL in req.file.path
     res.send({
-        imageUrl: `uploads/${req.file.filename}`,
+        imageUrl: req.file.path,
         message: "Imagen subida exitosamente",
     });
 });

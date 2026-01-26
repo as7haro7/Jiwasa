@@ -608,7 +608,7 @@ export default function PlaceDetailPage() {
                          <div className="aspect-square w-full rounded-2xl overflow-hidden relative border border-zinc-100">
                              {/* Ensure Map takes full height of container */}
                              <div className="h-full w-full"> 
-                                <Map places={[place]} placeLocation={place.coordenadas.coordinates} />
+                                <Map places={[place]} />
                              </div>
                          </div>
                          <div className="p-2 mt-1">

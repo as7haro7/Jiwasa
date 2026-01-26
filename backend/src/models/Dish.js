@@ -1,94 +1,52 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db.js";
 
-import mongoose from "mongoose";
+class Dish extends Model {}
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Dish:
- *       type: object
- *       required:
- *         - lugarId
- *         - nombre
- *         - precio
- *       properties:
- *         id:
- *           type: string
- *           description: The auto-generated id of the dish
- *         lugarId:
- *           type: string
- *           description: The place ID this dish belongs to
- *         nombre:
- *           type: string
- *           description: Name of the dish
- *         descripcion:
- *           type: string
- *           description: Description of the dish
- *         precio:
- *           type: number
- *           description: Price in Bolivianos
- *         categoria:
- *           type: string
- *           description: Category (desayuno, almuerzo, etc)
- *         etiquetas:
- *           type: array
- *           items:
- *             type: string
- *           description: Tags (picante, vegano, etc)
- *         disponible:
- *           type: boolean
- *           default: true
- *         destacado:
- *           type: boolean
- *           default: false
- *       example:
- *         nombre: Salteña de Carne
- *         precio: 8
- *         categoria: desayuno
- *         destacado: true
- */
-
-const dishSchema = new mongoose.Schema(
+Dish.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+        },
         lugarId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Place",
-            required: true,
+            type: DataTypes.UUID,
+            allowNull: false,
         },
         nombre: {
-            type: String,
-            required: true,
-            trim: true,
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         descripcion: {
-            type: String,
+            type: DataTypes.TEXT,
         },
         precio: {
-            type: Number,
-            required: true,
+            type: DataTypes.FLOAT, // or DECIMAL
+            allowNull: false,
         },
         categoria: {
-            type: String, // e.g., "desayuno", "almuerzo", "snack"
+            type: DataTypes.STRING,
         },
-        etiquetas: [
-            {
-                type: String, // e.g., "picante", "típico paceño", "vegano"
-            },
-        ],
+        etiquetas: {
+            type: DataTypes.ARRAY(DataTypes.STRING),
+            defaultValue: [],
+        },
         disponible: {
-            type: Boolean,
-            default: true,
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
         },
         destacado: {
-            type: Boolean,
-            default: false,
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
         },
     },
     {
+        sequelize,
+        modelName: "Dish",
+        tableName: "Dishes",
         timestamps: true,
     }
 );
-
-const Dish = mongoose.model("Dish", dishSchema);
 
 export default Dish;

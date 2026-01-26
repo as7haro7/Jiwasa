@@ -1,15 +1,14 @@
-
 import User from "../models/User.js";
 
 // @desc    Obtener perfil del usuario
 // @route   GET /api/users/me
 // @access  Private
 export const getUserProfile = async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findByPk(req.user.id);
 
     if (user) {
         res.json({
-            _id: user._id,
+            _id: user.id,
             nombre: user.nombre,
             email: user.email,
             rol: user.rol,
@@ -29,16 +28,18 @@ export const getUserProfile = async (req, res) => {
 // @route   PUT /api/users/me
 // @access  Private
 export const updateUserProfile = async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findByPk(req.user.id);
 
     if (user) {
-        // Verify current password for security
-        if (!req.body.currentPassword) {
-             return res.status(401).json({ message: "Por favor ingresa tu contraseña actual para guardar los cambios." }); 
-        }
+        // Verify current password only for local users
+        if (user.authProvider === "local") {
+            if (!req.body.currentPassword) {
+                return res.status(401).json({ message: "Por favor ingresa tu contraseña actual para guardar los cambios." });
+            }
 
-        if (user.authProvider === "local" && !(await user.matchPassword(req.body.currentPassword))) {
-            return res.status(401).json({ message: "La contraseña actual es incorrecta." });
+            if (!(await user.matchPassword(req.body.currentPassword))) {
+                return res.status(401).json({ message: "La contraseña actual es incorrecta." });
+            }
         }
 
         user.nombre = req.body.nombre || user.nombre;
@@ -54,7 +55,7 @@ export const updateUserProfile = async (req, res) => {
         const updatedUser = await user.save();
   
         res.json({
-            _id: updatedUser._id,
+            _id: updatedUser.id,
             nombre: updatedUser.nombre,
             email: updatedUser.email,
             rol: updatedUser.rol,
@@ -70,5 +71,3 @@ export const updateUserProfile = async (req, res) => {
         res.status(404).json({ message: "Usuario no encontrado" });
     }
 };
-
-

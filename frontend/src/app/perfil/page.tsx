@@ -150,7 +150,7 @@ export default function ProfilePage() {
       setUploading(true);
       try {
           // We assume /api/upload exists and returns { imageUrl: "/uploads/filename.jpg" }
-          const { data } = await api.post("/upload", formDataUpload, {
+          const { data } = await api.post("/upload?folder=perfiles", formDataUpload, {
               headers: { "Content-Type": "multipart/form-data" }
           });
           
@@ -276,6 +276,7 @@ export default function ProfilePage() {
                             onChange={handleChange} 
                             className="text-center font-bold text-lg h-9"
                             placeholder="Tu Nombre"
+                            autoComplete="off"
                        />
                        <p className="text-xs text-zinc-500">Sube una foto o cambia tu nombre</p>
                    </div>
@@ -341,6 +342,7 @@ export default function ProfilePage() {
                             onChange={handleChange} 
                             className={cn("h-8 text-sm", errors.telefono ? "border-red-500 focus-visible:ring-red-500" : "")}
                             placeholder="+591 ..."
+                            autoComplete="tel"
                         />
                         {errors.telefono && <p className="text-[10px] text-red-500 mt-1">{errors.telefono}</p>}
                       </div>
@@ -413,7 +415,9 @@ export default function ProfilePage() {
                             onChange={(e) => setChipInput(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Agregar preferencia (ej: Sushi, Parrilla)..."
-                            className="max-w-md"
+                            className="max-w-md bg-white"
+                            autoComplete="off"
+                            name="food_preference_input" // Unique name to avoid auto-fill
                         />
                          <p className="text-xs text-zinc-400">Presiona Enter para agregar.</p>
                     </div>
@@ -454,6 +458,7 @@ export default function ProfilePage() {
                                 onChange={handleChange} 
                                 className={cn("bg-white", errors.newPassword && "border-red-500")}
                                 placeholder="Nueva contraseña"
+                                autoComplete="new-password"
                             />
                             {errors.newPassword && <p className="text-[10px] text-red-600 mt-1">{errors.newPassword}</p>}
                         </div>
@@ -465,6 +470,7 @@ export default function ProfilePage() {
                                 onChange={handleChange} 
                                 className="bg-white"
                                 placeholder="Confirmar nueva contraseña"
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>
@@ -530,6 +536,7 @@ export default function ProfilePage() {
                  onChange={handleChange}
                  name="currentPassword"
                  className={cn(errors.currentPassword && "border-red-500 focus-visible:ring-red-500")}
+                 autoComplete="current-password"
                />
                {errors.currentPassword && <p className="text-red-500 text-xs mt-1">{errors.currentPassword}</p>}
                {errors.global && <p className="text-red-500 text-xs mt-1">{errors.global}</p>}

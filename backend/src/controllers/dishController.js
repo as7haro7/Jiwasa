@@ -1,4 +1,3 @@
-
 import Dish from "../models/Dish.js";
 
 // @desc    Obtener platos (de un lugar específico o todos - aunque todos no es común sin filtros)
@@ -7,8 +6,8 @@ import Dish from "../models/Dish.js";
 export const getDishes = async (req, res) => {
     try {
         if (req.params.lugarId) {
-            const dishes = await Dish.find({ lugarId: req.params.lugarId });
-            res.json(dishes);
+            const dishes = await Dish.findAll({ where: { lugarId: req.params.lugarId } });
+            res.json(dishes.map(d => { const j = d.toJSON(); j._id = d.id; return j; }));
         } else {
             // Si se quisiera listar todos los platos, cuidado con performance
             res.status(400).json({ message: "Falta ID de lugar" });
@@ -26,7 +25,9 @@ export const createDish = async (req, res) => {
         req.body.lugarId = req.params.lugarId; // Inject parent ID
 
         const dish = await Dish.create(req.body);
-        res.status(201).json(dish);
+        const json = dish.toJSON();
+        json._id = dish.id;
+        res.status(201).json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -37,18 +38,13 @@ export const createDish = async (req, res) => {
 // @access  Private/Admin
 export const updateDish = async (req, res) => {
     try {
-        const dish = await Dish.findById(req.params.id);
+        const dish = await Dish.findByPk(req.params.id);
 
         if (dish) {
-            dish.nombre = req.body.nombre || dish.nombre;
-            dish.descripcion = req.body.descripcion || dish.descripcion;
-            dish.precio = req.body.precio || dish.precio;
-            dish.categoria = req.body.categoria || dish.categoria;
-            dish.etiquetas = req.body.etiquetas || dish.etiquetas;
-            dish.disponible = req.body.disponible !== undefined ? req.body.disponible : dish.disponible;
-
-            const updatedDish = await dish.save();
-            res.json(updatedDish);
+            await dish.update(req.body);
+            const json = dish.toJSON();
+            json._id = dish.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Plato no encontrado" });
         }
@@ -62,10 +58,10 @@ export const updateDish = async (req, res) => {
 // @access  Private/Admin
 export const deleteDish = async (req, res) => {
     try {
-        const dish = await Dish.findById(req.params.id);
+        const dish = await Dish.findByPk(req.params.id);
 
         if (dish) {
-            await dish.deleteOne(); // or remove() depending on Mongoose version, deleteOne is safer now
+            await dish.destroy();
             res.json({ message: "Plato eliminado" });
         } else {
             res.status(404).json({ message: "Plato no encontrado" });

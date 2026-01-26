@@ -14,8 +14,8 @@ import { Utensils, Coffee, ShoppingBag, Store, Soup, MapPin, User } from "lucide
 interface Place {
   _id: string;
   nombre: string;
-  coordenadas: {
-    coordinates: [number, number]; // [lng, lat]
+  coordenadas?: { // Make optional to catch errors
+    coordinates?: [number, number]; // [lng, lat]
   };
   tipo: string;
   fotos?: string[];
@@ -131,9 +131,12 @@ export default function Map({ places, userLocation, radius }: MapProps) {
           shouldUpdate = true;
       } else if (places.length === 1) {
           // Focus on single place (Detail View)
-          center = [places[0].coordenadas.coordinates[1], places[0].coordenadas.coordinates[0]];
-          zoom = 16;
-          shouldUpdate = true;
+          const p = places[0];
+          if (p.coordenadas?.coordinates) {
+               center = [p.coordenadas.coordinates[1], p.coordenadas.coordinates[0]];
+               zoom = 16;
+               shouldUpdate = true;
+          }
       }
       
       return { activeCenter: center, activeZoom: zoom, shouldUpdateView: shouldUpdate };
@@ -163,10 +166,16 @@ export default function Map({ places, userLocation, radius }: MapProps) {
           </Marker>
       )}
 
-      {places.map((place) => (
+      {places.map((place) => {
+        const coords = place.coordenadas?.coordinates;
+        if (!coords || !Array.isArray(coords) || coords.length < 2) {
+             console.warn(`Place ${place._id} (${place.nombre}) has invalid coordinates:`, place.coordenadas);
+             return null;
+        }
+        return (
         <Marker
           key={place._id}
-          position={[place.coordenadas.coordinates[1], place.coordenadas.coordinates[0]]}
+          position={[coords[1], coords[0]]}
           icon={createCustomIcon(place.tipo)}
         >
           <Popup className="min-w-[200px]">
@@ -203,7 +212,7 @@ export default function Map({ places, userLocation, radius }: MapProps) {
             </div>
           </Popup>
         </Marker>
-      ))}
+      )})}
     </MapContainer>
   );
 }

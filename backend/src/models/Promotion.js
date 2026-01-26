@@ -1,49 +1,56 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db.js";
 
-import mongoose from "mongoose";
+class Promotion extends Model {}
 
-const promotionSchema = new mongoose.Schema(
+Promotion.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+        },
         lugarId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Place",
-            required: true,
+            type: DataTypes.UUID,
+            allowNull: false, // Promos usually belong to a place
         },
         platoId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Dish",
+            type: DataTypes.UUID,
+            allowNull: true,
         },
         titulo: {
-            type: String,
-            required: true,
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         descripcion: {
-            type: String,
-            required: true,
+            type: DataTypes.TEXT,
+            allowNull: false,
         },
         precioPromo: {
-            type: Number,
+            type: DataTypes.FLOAT,
         },
         descuentoPorcentaje: {
-            type: Number,
+            type: DataTypes.FLOAT,
         },
         fechaInicio: {
-            type: Date,
-            required: true,
+            type: DataTypes.DATE,
+            allowNull: false,
         },
         fechaFin: {
-            type: Date,
-            required: true,
+            type: DataTypes.DATE,
+            allowNull: false,
         },
         activa: {
-            type: Boolean,
-            default: true,
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
         },
     },
     {
+        sequelize,
+        modelName: "Promotion",
+        tableName: "Promotions",
         timestamps: true,
     }
 );
-
-const Promotion = mongoose.model("Promotion", promotionSchema);
 
 export default Promotion;

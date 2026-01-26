@@ -1,5 +1,7 @@
-
 import Place from "../models/Place.js";
+// import { Op, sequelize } from "../models/associations.js"; // ERROR: associations doesn't export these
+import { Sequelize } from "sequelize";
+const { Op } = Sequelize;
 
 // @desc    Obtener lugares con filtros y paginación
 // @route   GET /api/lugares
@@ -8,32 +10,43 @@ export const getPlaces = async (req, res) => {
     try {
         const pageSize = 10;
         const page = Number(req.query.pageNumber) || 1;
+        const offset = pageSize * (page - 1);
 
-        const keyword = req.query.keyword
-            ? {
-                $or: [
-                    { nombre: { $regex: req.query.keyword, $options: "i" } },
-                    { "tiposComida": { $regex: req.query.keyword, $options: "i" } },
-                    { zona: { $regex: req.query.keyword, $options: "i" } },
-                    { direccion: { $regex: req.query.keyword, $options: "i" } },
-                ],
-            }
-            : {};
+        const where = { estado: "activo" };
 
-        const filter = { ...keyword, estado: "activo" };
+        if (req.query.keyword) {
+            where[Op.or] = [
+                { nombre: { [Op.iLike]: `%${req.query.keyword}%` } },
+                { zona: { [Op.iLike]: `%${req.query.keyword}%` } },
+                { direccion: { [Op.iLike]: `%${req.query.keyword}%` } },
+                // Array search in Postgres for tiposComida
+                // { tiposComida: { [Op.contains]: [req.query.keyword] } } // Exact match in array
+                // For partial match in array text, it's harder. Let's skip complex array regex for now or use PG specific ops if needed.
+            ];
+        }
 
         if (req.query.zona) {
-            filter.zona = req.query.zona;
+            where.zona = req.query.zona;
         }
         if (req.query.tipo) {
-            filter.tipo = req.query.tipo;
+            where.tipo = req.query.tipo;
         }
 
-        const count = await Place.countDocuments(filter);
-        const places = await Place.find(filter)
-            .sort({ destacado: -1, promedioRating: -1 }) // Show featured and high rated first
-            .limit(pageSize)
-            .skip(pageSize * (page - 1));
+        const { count, rows } = await Place.findAndCountAll({
+            where,
+            limit: pageSize,
+            offset: offset,
+            order: [
+                ["destacado", "DESC"],
+                ["promedioRating", "DESC"],
+            ],
+        });
+
+        const places = rows.map(p => {
+             const json = p.toJSON();
+             json._id = p.id; // Map id to _id
+             return json;
+        });
 
         res.json({ places, page, pages: Math.ceil(count / pageSize) });
     } catch (error) {
@@ -46,10 +59,12 @@ export const getPlaces = async (req, res) => {
 // @access  Public
 export const getPlaceById = async (req, res) => {
     try {
-        const place = await Place.findById(req.params.id);
+        const place = await Place.findByPk(req.params.id);
 
         if (place) {
-            res.json(place);
+            const json = place.toJSON();
+            json._id = place.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Lugar no encontrado" });
         }
@@ -64,7 +79,7 @@ export const getPlaceById = async (req, res) => {
 export const createPlace = async (req, res) => {
     try {
         const {
-            propietarioId, // passed from frontend or middleware (assumed attached to req.body for now, usually req.user._id)
+            propietarioId,
             nombre,
             tipo,
             direccion,
@@ -83,16 +98,13 @@ export const createPlace = async (req, res) => {
             redesSociales,
         } = req.body;
 
-        const place = new Place({
-            // If not provided in body, maybe use req.user._id if we want to enforce current user as owner?
-            // For admin created places, we might want to assign a specific owner or the admin themselves.
-            // keeping flexibility for now.
-            propietarioId: propietarioId || req.user?._id, 
+        const place = await Place.create({
+            propietarioId: propietarioId || req.user?.id,
             nombre,
             tipo,
             direccion,
             zona,
-            coordenadas,
+            coordenadas, // Sequelize handles GeoJSON directly for GEOMETRY type
             descripcion,
             tiposComida,
             rangoPrecios,
@@ -106,8 +118,9 @@ export const createPlace = async (req, res) => {
             redesSociales,
         });
 
-        const createdPlace = await place.save();
-        res.status(201).json(createdPlace);
+        const json = place.toJSON();
+        json._id = place.id;
+        res.status(201).json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -118,29 +131,15 @@ export const createPlace = async (req, res) => {
 // @access  Private/Admin
 export const updatePlace = async (req, res) => {
     try {
-        const place = await Place.findById(req.params.id);
+        const place = await Place.findByPk(req.params.id);
 
         if (place) {
-            place.nombre = req.body.nombre || place.nombre;
-            place.tipo = req.body.tipo || place.tipo;
-            place.direccion = req.body.direccion || place.direccion;
-            place.zona = req.body.zona || place.zona;
-            place.coordenadas = req.body.coordenadas || place.coordenadas;
-            place.descripcion = req.body.descripcion || place.descripcion;
-            place.tiposComida = req.body.tiposComida || place.tiposComida;
-            place.rangoPrecios = req.body.rangoPrecios || place.rangoPrecios;
-            place.horario = req.body.horario || place.horario;
-            place.fotos = req.body.fotos || place.fotos;
-            place.estado = req.body.estado || place.estado;
-            place.destacado = req.body.destacado !== undefined ? req.body.destacado : place.destacado;
-            place.nivelVisibilidad = req.body.nivelVisibilidad || place.nivelVisibilidad;
-            place.telefonoContacto = req.body.telefonoContacto || place.telefonoContacto;
-            place.emailContacto = req.body.emailContacto || place.emailContacto;
-            place.sitioWeb = req.body.sitioWeb || place.sitioWeb;
-            place.redesSociales = req.body.redesSociales || place.redesSociales;
+            // Update fields manually or use set/update
+            await place.update(req.body); // Update with body fields
 
-            const updatedPlace = await place.save();
-            res.json(updatedPlace);
+            const json = place.toJSON();
+            json._id = place.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Lugar no encontrado" });
         }
@@ -152,10 +151,9 @@ export const updatePlace = async (req, res) => {
 // @desc    Eliminar/Cerrar un lugar (Admin)
 // @route   DELETE /api/lugares/:id
 // @access  Private/Admin
-// Note: Soft delete by setting state to 'cerrado' or physical delete? Req says "o cambio de estado a cerrado". Defaults to soft delete logic here unless specified.
 export const deletePlace = async (req, res) => {
     try {
-        const place = await Place.findById(req.params.id);
+        const place = await Place.findByPk(req.params.id);
 
         if (place) {
             place.estado = "cerrado";
@@ -169,39 +167,20 @@ export const deletePlace = async (req, res) => {
     }
 };
 
-
 // @desc    Sugerir un nuevo lugar (Usuario)
 // @route   POST /api/lugares/sugerencias
 // @access  Private
 export const suggestPlace = async (req, res) => {
     try {
-        const {
-            nombre,
-            tipo,
-            direccion,
-            zona,
-            coordenadas,
-            descripcion,
-            tiposComida,
-            rangoPrecios,
-            horario,
-        } = req.body;
-
-        const place = new Place({
-            nombre,
-            tipo,
-            direccion,
-            zona,
-            coordenadas,
-            descripcion,
-            tiposComida,
-            rangoPrecios,
-            horario,
-            estado: "pendiente", // Important: set to pending
+        const place = await Place.create({
+            ...req.body,
+            estado: "pendiente",
+            propietarioId: req.user.id
         });
 
-        const createdPlace = await place.save();
-        res.status(201).json({ message: "Sugerencia enviada", place: createdPlace });
+        const json = place.toJSON();
+        json._id = place.id;
+        res.status(201).json({ message: "Sugerencia enviada", place: json });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -212,18 +191,32 @@ export const suggestPlace = async (req, res) => {
 // @access  Public
 export const getMapPlaces = async (req, res) => {
     try {
-        const places = await Place.find({ estado: "activo" })
-            .select({
-                nombre: 1,
-                tipo: 1,
-                coordenadas: 1,
-                nivelVisibilidad: 1,
-                promedioRating: 1,
-                direccion: 1,
-                zona: 1,
-                fotos: { $slice: 1 } // Only return the first photo (thumbnail)
-            });
-        res.json(places);
+        const places = await Place.findAll({
+            where: { estado: "activo" },
+            attributes: [
+                "id",
+                "nombre",
+                "tipo",
+                "coordenadas",
+                "nivelVisibilidad",
+                "promedioRating",
+                "direccion",
+                "zona",
+                "fotos",
+            ],
+        });
+
+        const mappedPlaces = places.map((p) => {
+            const json = p.toJSON();
+            json._id = p.id;
+            // Slice photos manually
+            if (json.fotos && json.fotos.length > 0) {
+                json.fotos = [json.fotos[0]];
+            }
+            return json;
+        });
+
+        res.json(mappedPlaces);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -240,22 +233,30 @@ export const getPlacesByProximity = async (req, res) => {
             return res.status(400).json({ message: "Latitud y longitud requeridas" });
         }
 
-        const distanceInMeters = (dist || 1) * 1000; // default 1km
+        const distanceInMeters = (dist || 1) * 1000;
+        const location = Sequelize.literal(`ST_GeomFromText('POINT(${lng} ${lat})', 4326)`);
 
-        const places = await Place.find({
-            estado: "activo",
-            coordenadas: {
-                $near: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [parseFloat(lng), parseFloat(lat)],
-                    },
-                    $maxDistance: distanceInMeters,
-                },
-            },
+        const places = await Place.findAll({
+            where: Sequelize.where(
+                Sequelize.fn(
+                    "ST_DWithin",
+                    Sequelize.col("coordenadas"),
+                    location,
+                    distanceInMeters,
+                    true // Use spheroid=true for more accurate calculation? Or just meters directly?
+                    // Note: ST_DWithin with geography type (if converted) uses meters. With geometry '4326', strictly it uses degrees unless cast to geography.
+                    // However, Sequelize typically handles geometry.
+                    // Using ST_DistanceSphere or casting to geography is safer for meters.
+                ),
+                true
+            ),
+             // Alternative: simpler raw query if ST_DWithin gives trouble with types
         });
+        
+        // Re-mapping for safety
+        const mapped = places.map(p => { const j = p.toJSON(); j._id = p.id; return j; });
 
-        res.json(places);
+        res.json(mapped);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

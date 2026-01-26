@@ -1,6 +1,6 @@
-
 import Review from "../models/Review.js";
 import Place from "../models/Place.js";
+import User from "../models/User.js";
 
 // @desc    Obtener reseñas de un lugar
 // @route   GET /api/lugares/:lugarId/resenas
@@ -9,15 +9,28 @@ export const getReviews = async (req, res) => {
     try {
         const pageSize = 5;
         const page = Number(req.query.pageNumber) || 1;
+        const offset = pageSize * (page - 1);
 
-        // Sort logic (future)
+        const { count, rows } = await Review.findAndCountAll({
+            where: { lugarId: req.params.lugarId },
+            order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: User,
+                    as: "usuario",
+                    attributes: ["nombre", "fotoPerfil"],
+                },
+            ],
+            limit: pageSize,
+            offset: offset,
+        });
 
-        const count = await Review.countDocuments({ lugarId: req.params.lugarId });
-        const reviews = await Review.find({ lugarId: req.params.lugarId })
-            .sort({ createdAt: -1 })
-            .populate("usuarioId", "nombre fotoPerfil") // Populate user info
-            .limit(pageSize)
-            .skip(pageSize * (page - 1));
+        const reviews = rows.map((r) => {
+            const json = r.toJSON();
+            json._id = r.id;
+            if (json.usuario) json.usuario._id = json.usuario.id;
+            return json;
+        });
 
         res.json({ reviews, page, pages: Math.ceil(count / pageSize) });
     } catch (error) {
@@ -32,10 +45,12 @@ export const createReview = async (req, res) => {
     try {
         const { rating, comentario, fotos } = req.body;
         const lugarId = req.params.lugarId;
-        const usuarioId = req.user._id;
+        const usuarioId = req.user.id;
 
-        // Check if user already reviewed? Optional check but good practice
-        const alreadyReviewed = await Review.findOne({ lugarId, usuarioId });
+        const alreadyReviewed = await Review.findOne({
+            where: { lugarId, usuarioId },
+        });
+
         if (alreadyReviewed) {
             return res.status(400).json({ message: "Ya escribiste una reseña para este lugar" });
         }
@@ -49,16 +64,21 @@ export const createReview = async (req, res) => {
         });
 
         // Recalculate Place stats
-        const place = await Place.findById(lugarId);
+        const allReviews = await Review.findAll({ where: { lugarId } });
+        const cantidadResenas = allReviews.length;
+        const sumRating = allReviews.reduce((acc, item) => item.rating + acc, 0);
+        const promedioRating = sumRating / cantidadResenas;
+
+        const place = await Place.findByPk(lugarId);
         if (place) {
-            const reviews = await Review.find({ lugarId });
-            place.cantidadResenas = reviews.length;
-            place.promedioRating =
-                reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length;
+            place.cantidadResenas = cantidadResenas;
+            place.promedioRating = promedioRating;
             await place.save();
         }
 
-        res.status(201).json(review);
+        const json = review.toJSON();
+        json._id = review.id;
+        res.status(201).json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -69,7 +89,7 @@ export const createReview = async (req, res) => {
 // @access  Private
 export const markReviewHelpful = async (req, res) => {
     try {
-        const review = await Review.findById(req.params.id);
+        const review = await Review.findByPk(req.params.id);
         if (review) {
             review.util = (review.util || 0) + 1;
             await review.save();
@@ -80,4 +100,4 @@ export const markReviewHelpful = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};

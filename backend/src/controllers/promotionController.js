@@ -1,25 +1,25 @@
-
 import Promotion from "../models/Promotion.js";
+import { Sequelize } from "sequelize";
+const { Op } = Sequelize;
 
-// @desc    Obtener promociones (de un lugar O todas las activas)
+// @desc    Obtener promociones
 // @route   GET /api/lugares/:lugarId/promociones OR /api/promociones/activas
 // @access  Public
 export const getPromotions = async (req, res) => {
     try {
         if (req.params.lugarId) {
-            // Promos de un lugar
-            const promos = await Promotion.find({ lugarId: req.params.lugarId });
-            res.json(promos);
+            const promos = await Promotion.findAll({ where: { lugarId: req.params.lugarId } });
+            res.json(promos.map(p => { const j = p.toJSON(); j._id = p.id; return j; }));
         } else {
-            // Promos activas globales?
-            // Logic for "activas" based on date
             const today = new Date();
-            const promos = await Promotion.find({
-                fechaInicio: { $lte: today },
-                fechaFin: { $gte: today },
-                activa: true
+            const promos = await Promotion.findAll({
+                where: {
+                    fechaInicio: { [Op.lte]: today },
+                    fechaFin: { [Op.gte]: today },
+                    activa: true,
+                },
             });
-            res.json(promos);
+            res.json(promos.map(p => { const j = p.toJSON(); j._id = p.id; return j; }));
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -33,7 +33,9 @@ export const createPromotion = async (req, res) => {
     try {
         req.body.lugarId = req.params.lugarId;
         const promo = await Promotion.create(req.body);
-        res.status(201).json(promo);
+        const json = promo.toJSON();
+        json._id = promo.id;
+        res.status(201).json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -44,22 +46,16 @@ export const createPromotion = async (req, res) => {
 // @access  Private/Admin
 export const updatePromotion = async (req, res) => {
     try {
-        const promo = await Promotion.findById(req.params.id);
+        const promo = await Promotion.findByPk(req.params.id);
         if (promo) {
-            promo.titulo = req.body.titulo || promo.titulo;
-            promo.descripcion = req.body.descripcion || promo.descripcion;
-            promo.precioPromo = req.body.precioPromo || promo.precioPromo;
-            promo.descuentoPorcentaje = req.body.descuentoPorcentaje || promo.descuentoPorcentaje;
-            promo.fechaInicio = req.body.fechaInicio || promo.fechaInicio;
-            promo.fechaFin = req.body.fechaFin || promo.fechaFin;
-            promo.activa = req.body.activa !== undefined ? req.body.activa : promo.activa;
-
-            const updatedPromo = await promo.save();
-            res.json(updatedPromo);
+            await promo.update(req.body);
+            const json = promo.toJSON();
+            json._id = promo.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Promoción no encontrada" });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};

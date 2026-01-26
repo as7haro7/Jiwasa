@@ -1,4 +1,3 @@
-
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
@@ -18,7 +17,7 @@ export const registerUser = async (req, res) => {
     const { nombre, email, password } = req.body;
 
     try {
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ where: { email } });
 
         if (userExists) {
             return res.status(400).json({ message: "El usuario ya existe" });
@@ -32,11 +31,11 @@ export const registerUser = async (req, res) => {
 
         if (user) {
             res.status(201).json({
-                _id: user._id,
+                _id: user.id, // Map id to _id for frontend compatibility
                 nombre: user.nombre,
                 email: user.email,
                 rol: user.rol,
-                token: generateToken(user._id),
+                token: generateToken(user.id),
             });
         } else {
             res.status(400).json({ message: "Datos de usuario inválidos" });
@@ -57,7 +56,7 @@ export const googleLogin = async (req, res) => {
 
         const { name, email, picture, sub } = ticket.getPayload();
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ where: { email } });
 
         if (user) {
             if (!user.googleId) {
@@ -72,17 +71,17 @@ export const googleLogin = async (req, res) => {
                 fotoPerfil: picture,
                 googleId: sub,
                 authProvider: "google",
-                password: "", // Handled by pre-save check
+                password: null, // Handled by pre-save check
             });
         }
 
         res.json({
-            _id: user._id,
+            _id: user.id,
             nombre: user.nombre,
             email: user.email,
             rol: user.rol,
             fotoPerfil: user.fotoPerfil,
-            token: generateToken(user._id),
+            token: generateToken(user.id),
         });
 
     } catch (error) {
@@ -97,15 +96,15 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ where: { email } });
 
         if (user && user.password && (await user.matchPassword(password))) {
             res.json({
-                _id: user._id,
+                _id: user.id,
                 nombre: user.nombre,
                 email: user.email,
                 rol: user.rol,
-                token: generateToken(user._id),
+                token: generateToken(user.id),
             });
         } else {
             res.status(401).json({ message: "Email o contraseña inválidos" });

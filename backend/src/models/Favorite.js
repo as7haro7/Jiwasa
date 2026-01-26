@@ -1,27 +1,36 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db.js";
 
-import mongoose from "mongoose";
+class Favorite extends Model {}
 
-const favoriteSchema = new mongoose.Schema(
+Favorite.init(
   {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     usuarioId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     lugarId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Place",
-      required: true,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
   },
   {
+    sequelize,
+    modelName: "Favorite",
+    tableName: "Favorites",
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["usuarioId", "lugarId"],
+      },
+    ],
   }
 );
-
-// Prevent duplicate favorites (same user, same place)
-favoriteSchema.index({ usuarioId: 1, lugarId: 1 }, { unique: true });
-
-const Favorite = mongoose.model("Favorite", favoriteSchema);
 
 export default Favorite;

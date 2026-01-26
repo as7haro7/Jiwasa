@@ -1,5 +1,6 @@
-
 import SponsoredPlacement from "../models/SponsoredPlacement.js";
+import { Sequelize } from "sequelize";
+const { Op } = Sequelize;
 
 // @desc    Obtener ubicaciones patrocinadas activas (Public)
 // @route   GET /api/sponsored
@@ -7,17 +8,24 @@ import SponsoredPlacement from "../models/SponsoredPlacement.js";
 export const getActiveSponsored = async (req, res) => {
     try {
         const now = new Date();
-        // Find active and within date range
-        // sort by peso desc (higher weight first)
-        const sponsored = await SponsoredPlacement.find({
-            activo: true,
-            fechaInicio: { $lte: now },
-            fechaFin: { $gte: now },
-        })
-            .populate("lugarId", "nombre fotos promedioRating zona tipo") // Populate basic info
-            .sort({ peso: -1 });
+        const sponsored = await SponsoredPlacement.findAll({
+            where: {
+                activo: true,
+                fechaInicio: { [Op.lte]: now },
+                fechaFin: { [Op.gte]: now },
+            },
+            include: ["lugar"], // Assumes alias 'lugar' in association or default model name
+            order: [["peso", "DESC"]],
+        });
 
-        res.json(sponsored);
+        const mapped = sponsored.map((s) => {
+            const j = s.toJSON();
+            j._id = s.id;
+            if (j.lugar) j.lugar._id = j.lugar.id;
+            return j;
+        });
+
+        res.json(mapped);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -30,7 +38,7 @@ export const createSponsored = async (req, res) => {
     try {
         const { lugarId, posicion, fechaInicio, fechaFin, activo, peso } = req.body;
 
-        const sponsored = new SponsoredPlacement({
+        const sponsored = await SponsoredPlacement.create({
             lugarId,
             posicion,
             fechaInicio,
@@ -39,8 +47,9 @@ export const createSponsored = async (req, res) => {
             peso,
         });
 
-        const createdSponsored = await sponsored.save();
-        res.status(201).json(createdSponsored);
+        const json = sponsored.toJSON();
+        json._id = sponsored.id;
+        res.status(201).json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -51,9 +60,14 @@ export const createSponsored = async (req, res) => {
 // @access  Private/Admin
 export const getSponsoredById = async (req, res) => {
     try {
-        const sponsored = await SponsoredPlacement.findById(req.params.id).populate("lugarId");
+        const sponsored = await SponsoredPlacement.findByPk(req.params.id, {
+            include: ["lugar"],
+        });
         if (sponsored) {
-            res.json(sponsored);
+            const json = sponsored.toJSON();
+            json._id = sponsored.id;
+            if (json.lugar) json.lugar._id = json.lugar.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Ubicación patrocinada no encontrada" });
         }
@@ -67,18 +81,13 @@ export const getSponsoredById = async (req, res) => {
 // @access  Private/Admin
 export const updateSponsored = async (req, res) => {
     try {
-        const sponsored = await SponsoredPlacement.findById(req.params.id);
+        const sponsored = await SponsoredPlacement.findByPk(req.params.id);
 
         if (sponsored) {
-            sponsored.lugarId = req.body.lugarId || sponsored.lugarId;
-            sponsored.posicion = req.body.posicion || sponsored.posicion;
-            sponsored.fechaInicio = req.body.fechaInicio || sponsored.fechaInicio;
-            sponsored.fechaFin = req.body.fechaFin || sponsored.fechaFin;
-            sponsored.activo = req.body.activo !== undefined ? req.body.activo : sponsored.activo;
-            sponsored.peso = req.body.peso || sponsored.peso;
-
-            const updatedSponsored = await sponsored.save();
-            res.json(updatedSponsored);
+            await sponsored.update(req.body);
+            const json = sponsored.toJSON();
+            json._id = sponsored.id;
+            res.json(json);
         } else {
             res.status(404).json({ message: "Ubicación patrocinada no encontrada" });
         }
@@ -92,10 +101,10 @@ export const updateSponsored = async (req, res) => {
 // @access  Private/Admin
 export const deleteSponsored = async (req, res) => {
     try {
-        const sponsored = await SponsoredPlacement.findById(req.params.id);
+        const sponsored = await SponsoredPlacement.findByPk(req.params.id);
 
         if (sponsored) {
-            await sponsored.deleteOne();
+            await sponsored.destroy();
             res.json({ message: "Ubicación patrocinada eliminada" });
         } else {
             res.status(404).json({ message: "Ubicación patrocinada no encontrada" });
