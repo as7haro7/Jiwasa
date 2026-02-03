@@ -56,14 +56,14 @@ const router = express.Router({ mergeParams: true });
  */
 router.route("/")
     .get(getDishes)
-    .post(protect, admin, createDish);
+    .post(protect, createDish);
 
 
 /**
  * @swagger
  * /lugares/{lugarId}/platos/{id}:
  *   put:
- *     summary: Update a dish (Admin only)
+ *     summary: Update a dish (Admin or Owner)
  *     tags: [Dishes]
  *     security:
  *       - bearerAuth: []
@@ -88,7 +88,7 @@ router.route("/")
  *       200:
  *         description: Dish updated
  *   delete:
- *     summary: Delete a dish (Admin only)
+ *     summary: Delete a dish (Admin or Owner)
  *     tags: [Dishes]
  *     security:
  *       - bearerAuth: []
@@ -108,7 +108,7 @@ router.route("/")
  *         description: Dish deleted
  */
 router.route("/:id")
-    .put(protect, admin, updateDish)
-    .delete(protect, admin, deleteDish);
+    .put(protect, updateDish)
+    .delete(protect, deleteDish);
 
 export default router;

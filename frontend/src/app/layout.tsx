@@ -10,6 +10,8 @@ export const metadata: Metadata = {
 
 import Footer from "@/components/layout/Footer";
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased min-h-screen bg-white text-black flex flex-col">
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

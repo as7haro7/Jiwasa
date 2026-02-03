@@ -37,7 +37,8 @@ export const connectDB = async () => {
         const connectionType = process.env.DATABASE_URL ? "Neon (Cloud)" : "Local (PostgreSQL)";
         console.log(`PostgreSQL conectado: ${connectionType}`);
         // Sync models
-        // await sequelize.sync({ force: false }); // Done in seed or main
+        // Sync models
+        // await sequelize.sync({ alter: true });
     } catch (error) {
         console.error("Error conectando a PostgreSQL", error);
         process.exit(1);

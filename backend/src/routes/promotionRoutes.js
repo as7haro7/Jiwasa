@@ -1,6 +1,6 @@
 
 import express from "express";
-import { getPromotions, createPromotion, updatePromotion } from "../controllers/promotionController.js";
+import { getPromotions, createPromotion, updatePromotion, deletePromotion } from "../controllers/promotionController.js";
 import { protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router({ mergeParams: true });
@@ -65,9 +65,9 @@ const router = express.Router({ mergeParams: true });
  */
 router.route("/")
     .get(getPromotions)
-    .post(protect, admin, createPromotion);
+    .post(protect, createPromotion);
 
-router.get("/activas", getPromotions); 
+router.get("/activas", getPromotions);
 
 /**
  * @swagger
@@ -94,6 +94,7 @@ router.get("/activas", getPromotions);
  *         description: Promotion updated
  */
 router.route("/:id")
-    .put(protect, admin, updatePromotion);
+    .put(protect, updatePromotion)
+    .delete(protect, deletePromotion);
 
 export default router;

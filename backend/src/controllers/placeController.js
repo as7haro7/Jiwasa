@@ -1,4 +1,5 @@
 import Place from "../models/Place.js";
+import Favorite from "../models/Favorite.js";
 // import { Op, sequelize } from "../models/associations.js"; // ERROR: associations doesn't export these
 import { Sequelize } from "sequelize";
 const { Op } = Sequelize;
@@ -12,16 +13,23 @@ export const getPlaces = async (req, res) => {
         const page = Number(req.query.pageNumber) || 1;
         const offset = pageSize * (page - 1);
 
-        const where = { estado: "activo" };
+        const where = {};
+
+        // If filtering by specific owner (e.g., getting "My Places")
+        // If logged in user requests own places, show all states.
+        // Otherwise default to active.
+        if (req.query.propietarioId) {
+            where.propietarioId = req.query.propietarioId;
+        } else {
+            // For public listing, only active places
+            where.estado = "activo";
+        }
 
         if (req.query.keyword) {
             where[Op.or] = [
                 { nombre: { [Op.iLike]: `%${req.query.keyword}%` } },
                 { zona: { [Op.iLike]: `%${req.query.keyword}%` } },
                 { direccion: { [Op.iLike]: `%${req.query.keyword}%` } },
-                // Array search in Postgres for tiposComida
-                // { tiposComida: { [Op.contains]: [req.query.keyword] } } // Exact match in array
-                // For partial match in array text, it's harder. Let's skip complex array regex for now or use PG specific ops if needed.
             ];
         }
 
@@ -43,9 +51,9 @@ export const getPlaces = async (req, res) => {
         });
 
         const places = rows.map(p => {
-             const json = p.toJSON();
-             json._id = p.id; // Map id to _id
-             return json;
+            const json = p.toJSON();
+            json._id = p.id; // Map id to _id
+            return json;
         });
 
         res.json({ places, page, pages: Math.ceil(count / pageSize) });
@@ -73,11 +81,15 @@ export const getPlaceById = async (req, res) => {
     }
 };
 
-// @desc    Crear un lugar (Admin)
+// @desc    Crear un lugar (Admin o Propietario)
 // @route   POST /api/lugares
-// @access  Private/Admin
+// @access  Private
 export const createPlace = async (req, res) => {
     try {
+        // Validation: Must be Admin OR (User and esPropietario)
+        if (req.user.rol !== "admin" && !req.user.esPropietario) {
+            return res.status(403).json({ message: "No tienes permisos para crear lugares." });
+        }
         const {
             propietarioId,
             nombre,
@@ -126,14 +138,18 @@ export const createPlace = async (req, res) => {
     }
 };
 
-// @desc    Actualizar un lugar (Admin)
+// @desc    Actualizar un lugar (Admin o Dueño)
 // @route   PUT /api/lugares/:id
-// @access  Private/Admin
+// @access  Private
 export const updatePlace = async (req, res) => {
     try {
         const place = await Place.findByPk(req.params.id);
 
         if (place) {
+            // Check permissions
+            if (req.user.rol !== "admin" && place.propietarioId !== req.user.id) {
+                return res.status(403).json({ message: "No autorizado para editar este lugar" });
+            }
             // Update fields manually or use set/update
             await place.update(req.body); // Update with body fields
 
@@ -148,14 +164,18 @@ export const updatePlace = async (req, res) => {
     }
 };
 
-// @desc    Eliminar/Cerrar un lugar (Admin)
+// @desc    Eliminar/Cerrar un lugar (Admin o Dueño)
 // @route   DELETE /api/lugares/:id
-// @access  Private/Admin
+// @access  Private
 export const deletePlace = async (req, res) => {
     try {
         const place = await Place.findByPk(req.params.id);
 
         if (place) {
+            // Check permissions
+            if (req.user.rol !== "admin" && place.propietarioId !== req.user.id) {
+                return res.status(403).json({ message: "No autorizado para eliminar este lugar" });
+            }
             place.estado = "cerrado";
             await place.save();
             res.json({ message: "Lugar marcado como cerrado" });
@@ -250,13 +270,29 @@ export const getPlacesByProximity = async (req, res) => {
                 ),
                 true
             ),
-             // Alternative: simpler raw query if ST_DWithin gives trouble with types
+            // Alternative: simpler raw query if ST_DWithin gives trouble with types
         });
-        
+
         // Re-mapping for safety
         const mapped = places.map(p => { const j = p.toJSON(); j._id = p.id; return j; });
 
         res.json(mapped);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Obtener estadisticas basicas (favoritos)
+// @route   GET /api/lugares/:id/stats
+// @access  Public
+export const getPlaceStats = async (req, res) => {
+    try {
+        const placeId = req.params.id;
+        const favoritesCount = await Favorite.count({ where: { lugarId: placeId } });
+
+        res.json({
+            favoritesCount
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

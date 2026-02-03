@@ -2,7 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 // import User from "./User.js"; // Dependencies handled in db.js or via FKs
 
-class Place extends Model {}
+class Place extends Model { }
 
 Place.init(
   {
@@ -93,6 +93,14 @@ Place.init(
     redesSociales: {
       type: DataTypes.JSON,
       defaultValue: {},
+    },
+    metodosPago: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    servicios: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
     },
   },
   {

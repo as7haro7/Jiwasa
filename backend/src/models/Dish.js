@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-class Dish extends Model {}
+class Dish extends Model { }
 
 Dish.init(
     {
@@ -27,6 +27,9 @@ Dish.init(
         },
         categoria: {
             type: DataTypes.STRING,
+        },
+        foto: {
+            type: DataTypes.STRING, // URL of the image
         },
         etiquetas: {
             type: DataTypes.ARRAY(DataTypes.STRING),

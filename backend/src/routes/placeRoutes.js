@@ -9,6 +9,7 @@ import {
     suggestPlace,
     getMapPlaces,
     getPlacesByProximity,
+    getPlaceStats,
 } from "../controllers/placeController.js";
 import { protect, admin } from "../middlewares/authMiddleware.js";
 
@@ -168,7 +169,7 @@ router.get("/cercanos", getPlacesByProximity);
  */
 router.route("/")
     .get(getPlaces)
-    .post(protect, admin, createPlace);
+    .post(protect, createPlace); // Check admin/owner inside controller
 
 
 /**
@@ -246,7 +247,26 @@ router.route("/sugerencias")
  */
 router.route("/:id")
     .get(getPlaceById)
-    .put(protect, admin, updatePlace)
-    .delete(protect, admin, deletePlace);
+    .put(protect, updatePlace) // Check permissions in controller
+    .delete(protect, deletePlace); // Check permissions in controller
+
+
+/**
+ * @swagger
+ * /lugares/{id}/stats:
+ *   get:
+ *     summary: Get place statistics
+ *     tags: [Places]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Stats (favoritesCount)
+ */
+router.get("/:id/stats", getPlaceStats);
 
 export default router;

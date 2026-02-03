@@ -23,7 +23,7 @@ async function seed() {
       {
         nombre: "Carlos Mamani",
         email: "carlos@jiwasa.com",
-        password: "password123", // Will be hashed by hook
+        password: "12345678", // Will be hashed by hook
         authProvider: "local",
         biografia: "Paceño fan de la comida callejera y mercados.",
         telefono: "+59170123456",
@@ -35,7 +35,7 @@ async function seed() {
       {
         nombre: "Doña Rita Anticuchos",
         email: "rita@jiwasa.com",
-        password: "password123",
+        password: "12345678",
         authProvider: "local",
         biografia: "Atiendo anticuchos en Sopocachi hace más de 20 años.",
         telefono: "+59171111111",
@@ -47,7 +47,7 @@ async function seed() {
       {
         nombre: "Admin Jiwasa",
         email: "erick@jiwasa.com",
-        password: "password123",
+        password: "12345678",
         authProvider: "local",
         biografia: "Administrador de la plataforma Sabores de La Paz.",
         telefono: "+59170000000",
@@ -59,7 +59,7 @@ async function seed() {
       {
         nombre: "María Quispe",
         email: "maria@jiwasa.com",
-        password: "password123",
+        password: "12345678",
         authProvider: "local",
         biografia: "Me encantan los desayunos con api y pastel.",
         telefono: "+59178900001",
@@ -71,7 +71,7 @@ async function seed() {
       {
         nombre: "José Fernández",
         email: "jose@jiwasa.com",
-        password: "password123",
+        password: "12345678",
         authProvider: "local",
         biografia: "Fan de los almuerzos de mercado y sopas calientes.",
         telefono: "+59178900002",
@@ -83,7 +83,7 @@ async function seed() {
       {
         nombre: "Anna Traveler",
         email: "anna.traveler@jiwasa.com",
-        password: "password123",
+        password: "12345678",
         authProvider: "local",
         biografia: "Turista que está descubriendo la comida callejera de La Paz.",
         telefono: "+59178900003",
@@ -97,7 +97,7 @@ async function seed() {
     // Create users individually to trigger hooks
     const users = [];
     for (const u of usersData) {
-        users.push(await User.create(u));
+      users.push(await User.create(u));
     }
     const [carlos, donaRita, admin, maria, jose, turista] = users;
 
@@ -129,7 +129,9 @@ async function seed() {
         destacado: true,
         nivelVisibilidad: "premium",
         telefonoContacto: "+59171111111",
-        emailContacto: "rita.anticuchos@jiwasa.com"
+        emailContacto: "rita.anticuchos@jiwasa.com",
+        metodosPago: ["efectivo", "qr"],
+        servicios: ["para_llevar", "pet_friendly"]
       },
       {
         propietarioId: admin.id,
@@ -147,7 +149,9 @@ async function seed() {
         estado: "activo",
         destacado: true,
         nivelVisibilidad: "patrocinado",
-        telefonoContacto: "+59171234567"
+        telefonoContacto: "+59171234567",
+        metodosPago: ["efectivo", "qr", "tarjeta"],
+        servicios: ["wifi", "para_llevar"]
       },
       {
         propietarioId: admin.id,
@@ -164,7 +168,9 @@ async function seed() {
         cantidadResenas: 8,
         estado: "activo",
         destacado: false,
-        nivelVisibilidad: "normal"
+        nivelVisibilidad: "normal",
+        metodosPago: ["efectivo"],
+        servicios: ["para_llevar"]
       },
       {
         propietarioId: admin.id,
@@ -220,8 +226,8 @@ async function seed() {
     ];
 
     const places = [];
-    for(const p of placesData) {
-        places.push(await Place.create(p));
+    for (const p of placesData) {
+      places.push(await Place.create(p));
     }
     const [anticuchosRita, saltenasCentro, comedorLanza, cafeTypica, lasCholas, apiOruro] = places;
 
@@ -241,17 +247,17 @@ async function seed() {
 
     // 4) Reseñas
     const reviewsData = [
-        { usuarioId: carlos.id, lugarId: anticuchosRita.id, rating: 5, comentario: "Excelente" },
-        { usuarioId: maria.id, lugarId: anticuchosRita.id, rating: 4, comentario: "Muy bueno" },
-        { usuarioId: turista.id, lugarId: cafeTypica.id, rating: 5, comentario: "Great coffee", util: 4 }
+      { usuarioId: carlos.id, lugarId: anticuchosRita.id, rating: 5, comentario: "Excelente" },
+      { usuarioId: maria.id, lugarId: anticuchosRita.id, rating: 4, comentario: "Muy bueno" },
+      { usuarioId: turista.id, lugarId: cafeTypica.id, rating: 5, comentario: "Great coffee", util: 4 }
     ];
     await Review.bulkCreate(reviewsData);
 
     // 5) Favoritos
     const favoritesData = [
-        { usuarioId: carlos.id, lugarId: anticuchosRita.id },
-        { usuarioId: carlos.id, lugarId: saltenasCentro.id },
-        { usuarioId: turista.id, lugarId: cafeTypica.id }
+      { usuarioId: carlos.id, lugarId: anticuchosRita.id },
+      { usuarioId: carlos.id, lugarId: saltenasCentro.id },
+      { usuarioId: turista.id, lugarId: cafeTypica.id }
     ];
     await Favorite.bulkCreate(favoritesData);
 
