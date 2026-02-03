@@ -149,7 +149,7 @@ export default function Map({ places, userLocation, radius }: MapProps) {
       key={`${activeCenter[0]}-${activeCenter[1]}-${activeZoom}`} // Force remount on significant change to avoid Leaflet internal errors
       center={activeCenter}
       zoom={activeZoom}
-      scrollWheelZoom={true}
+      scrollWheelZoom={false}
       className="h-full w-full z-0 rounded-lg"
     >
       {/* Update view when userLocation or single place changes */}

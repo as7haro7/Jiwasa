@@ -267,7 +267,7 @@ export default function Home() {
                                     Geolocalización
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-black tracking-tighter">
-                                    Explora tu zona <span className="text-emerald-500">📍</span>
+                                    Explora tu zona
                                 </h2>
                                 <p className="text-zinc-500 text-sm font-medium mt-1">Encuentra joyas ocultas cerca de ti.</p>
                             </div>
@@ -328,7 +328,7 @@ export default function Home() {
                         <div className="h-[400px] w-full rounded-3xl overflow-hidden shadow-2xl shadow-zinc-200/50 border border-zinc-200 relative group">
                             <Map places={mapPlaces} userLocation={userLocation} radius={distance} />
                             {userLocation && (
-                                <div className="absolute top-4 right-4 z-[400] bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg text-xs font-bold text-blue-700 border border-blue-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
+                                <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg text-xs font-bold text-blue-700 border border-blue-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
                                     <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -337,7 +337,7 @@ export default function Home() {
                                 </div>
                             )}
 
-                            <div className="absolute bottom-4 left-4 z-[400]">
+                            <div className="absolute bottom-4 left-4 z-10">
                                 <Button className="bg-white/90 backdrop-blur text-black hover:bg-white border border-zinc-200 shadow-xl rounded-full text-xs font-bold">
                                     Ver en pantalla completa
                                 </Button>
@@ -420,7 +420,7 @@ export default function Home() {
                         </div>}
                 </section>
 
-                {/* Top 100 La Paz */}
+                {/* Top 10 La Paz */}
                 <section className="bg-black text-white rounded-[2rem] p-8 md:p-20 relative overflow-hidden group cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
                     <div className="absolute inset-0 bg-[url('/baner.jpg')] bg-cover bg-center opacity-60 group-hover:scale-105 group-hover:opacity-50 transition-all duration-1000" />
@@ -432,7 +432,7 @@ export default function Home() {
                         </div>
 
                         <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9]">
-                            TOP 100 <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">LA PAZ.</span>
+                            TOP 10 <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">LA PAZ.</span>
                         </h2>
 
                         <p className="text-zinc-300 text-xl font-medium max-w-lg leading-relaxed">

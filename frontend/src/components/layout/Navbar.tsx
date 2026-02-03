@@ -29,6 +29,9 @@ export default function Navbar() {
       setShowSearch(window.scrollY > 500);
     };
 
+    // Check immediately on mount to handle page refreshes
+    handleScroll();
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -46,7 +49,7 @@ export default function Navbar() {
 
   return (
     <nav className={cn(
-      "sticky top-0 z-50 w-full transition-all duration-500 h-20 flex items-center",
+      "sticky top-0 z-[1000] w-full transition-all duration-500 h-20 flex items-center",
       isTransparent
         ? "bg-transparent border-transparent"
         : "bg-white/95 backdrop-blur-md shadow-sm border-b border-zinc-100"
@@ -139,7 +142,7 @@ export default function Navbar() {
                 <div className="hidden md:flex flex-col items-end mr-1 text-right">
                   <span className={cn(
                     "text-sm font-bold leading-none transition-colors",
-                    isTransparent ? "text-zinc-700 group-hover:text-[#007068]" : "text-zinc-900"
+                    isTransparent ? "text-zinc-800 group-hover:text-[#007068]" : "text-zinc-900"
                   )}>{user?.nombre?.split(' ')[0]}</span>
                   <span className={cn(
                     "text-[10px] font-bold uppercase tracking-wider",
@@ -188,7 +191,7 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-3">
               <Link href="/auth/login">
-                <Button variant="ghost" className={cn("font-bold text-sm rounded-full px-5 transition-colors", isTransparent ? "text-white hover:bg-white/20 drop-shadow-sm" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900")}>Ingresar</Button>
+                <Button variant="ghost" className={cn("font-bold text-sm rounded-full px-5 transition-colors", isTransparent ? "text-zinc-500 hover:bg-white/20 drop-shadow-sm" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900")}>Ingresar</Button>
               </Link>
               <Link href="/auth/register">
                 <Button className={cn(
