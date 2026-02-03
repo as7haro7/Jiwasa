@@ -47,7 +47,7 @@ Dish.init(
     {
         sequelize,
         modelName: "Dish",
-        tableName: "Dishes",
+        tableName: "dishes",
         timestamps: true,
     }
 );

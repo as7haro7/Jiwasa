@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-class Review extends Model {}
+class Review extends Model { }
 
 Review.init(
     {
@@ -42,7 +42,7 @@ Review.init(
     {
         sequelize,
         modelName: "Review",
-        tableName: "Reviews",
+        tableName: "reviews",
         timestamps: true,
     }
 );

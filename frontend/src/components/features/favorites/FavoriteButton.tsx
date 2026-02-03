@@ -14,7 +14,7 @@ interface FavoriteButtonProps {
 }
 
 export default function FavoriteButton({ placeId, className, variant = "icon" }: FavoriteButtonProps) {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -43,6 +43,8 @@ export default function FavoriteButton({ placeId, className, variant = "icon" }:
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent linking if inside a Link
         e.stopPropagation();
+
+        if (authLoading) return;
 
         if (!user) {
             alert("Inicia sesión para guardar favoritos");
@@ -84,9 +86,10 @@ export default function FavoriteButton({ placeId, className, variant = "icon" }:
     return (
         <button
             onClick={toggleFavorite}
-            disabled={loading}
+            disabled={loading || authLoading}
             className={cn(
                 "p-2 rounded-full transition-all hover:scale-110 active:scale-95",
+                authLoading ? "opacity-50 animate-pulse cursor-wait" : "",
                 isFavorite ? "bg-red-500 text-white shadow-md" : "bg-white/50 backdrop-blur-md text-zinc-900 hover:bg-white",
                 className
             )}

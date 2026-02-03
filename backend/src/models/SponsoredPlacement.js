@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-class SponsoredPlacement extends Model {}
+class SponsoredPlacement extends Model { }
 
 SponsoredPlacement.init(
     {
@@ -42,7 +42,7 @@ SponsoredPlacement.init(
     {
         sequelize,
         modelName: "SponsoredPlacement",
-        tableName: "SponsoredPlacements",
+        tableName: "sponsored_placements",
         timestamps: true,
         indexes: [
             {

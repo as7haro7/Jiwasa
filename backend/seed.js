@@ -14,6 +14,10 @@ async function seed() {
     await sequelize.query("CREATE EXTENSION IF NOT EXISTS postgis;");
     console.log("Extensión PostGIS habilitada.");
 
+    // Drop legacy capitalized tables if they exist (to avoid index conflicts)
+    await sequelize.query('DROP TABLE IF EXISTS "Users", "Places", "Dishes", "Reviews", "Favorites", "Promotions", "Reports", "SponsoredPlacements" CASCADE;');
+    console.log("Tablas antiguas eliminadas.");
+
     // Force sync to drop tables and recreate them
     await sequelize.sync({ force: true });
     console.log("Tablas creadas.");

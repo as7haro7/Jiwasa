@@ -245,9 +245,10 @@ export default function PlaceDetailPage() {
                         <Button variant="ghost" className="bg-black/30 backdrop-blur-md hover:bg-black/50 text-white rounded-full p-2.5 h-auto border border-white/10 transition-all">
                             <Share2 className="h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" className="bg-black/30 backdrop-blur-md hover:bg-black/50 text-white rounded-full p-2.5 h-auto border border-white/10 transition-all">
-                            <Heart className="h-5 w-5" />
-                        </Button>
+                        <FavoriteButton
+                            placeId={place._id}
+                            className="bg-black/30 backdrop-blur-md hover:bg-black/50 text-white hover:bg-black/60 rounded-full p-2.5 h-auto border border-white/10 transition-all"
+                        />
                     </div>
                 </div>
 

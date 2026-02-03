@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-class Promotion extends Model {}
+class Promotion extends Model { }
 
 Promotion.init(
     {
@@ -48,7 +48,7 @@ Promotion.init(
     {
         sequelize,
         modelName: "Promotion",
-        tableName: "Promotions",
+        tableName: "promotions",
         timestamps: true,
     }
 );

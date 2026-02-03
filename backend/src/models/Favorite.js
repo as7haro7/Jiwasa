@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-class Favorite extends Model {}
+class Favorite extends Model { }
 
 Favorite.init(
   {
@@ -22,7 +22,7 @@ Favorite.init(
   {
     sequelize,
     modelName: "Favorite",
-    tableName: "Favorites",
+    tableName: "favorites",
     timestamps: true,
     indexes: [
       {
