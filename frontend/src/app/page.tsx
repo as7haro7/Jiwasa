@@ -13,6 +13,7 @@ import { OfferCard } from "@/components/features/home/OfferCard";
 import { PlaceListCard } from "@/components/features/home/PlaceListCard";
 import { BookedCard } from "@/components/features/home/BookedCard";
 import { NewPlaceCard } from "@/components/features/home/NewPlaceCard";
+import { SelectionCard } from "@/components/features/home/SelectionCard";
 
 // Dynamic import for Map to avoid SSR issues with Leaflet
 const Map = dynamic(() => import("@/components/features/Map"), {
@@ -171,7 +172,7 @@ export default function Home() {
                 {/* Map Section Removed from here */}
 
                 {/* Categories Bento Grid */}
-                <section className="px-6 md:px-12 lg:px-24 mt-24">
+                <section className="px-4 md:px-12 lg:px-24 mt-24">
                     <div className="flex items-end justify-between mb-8">
                         <div>
                             <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-2">
@@ -181,49 +182,49 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[200px]">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {[
                             {
                                 name: "Restaurantes",
                                 type: "restaurante",
                                 image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
-                                className: "md:col-span-2 md:row-span-2",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><UtensilsCrossed className="h-6 w-6" /></div>
+                                className: "md:col-span-2 md:row-span-2 h-48 md:h-[420px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><UtensilsCrossed className="h-6 w-6" /></div>
                             },
                             {
                                 name: "Cafés",
                                 type: "café",
                                 image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80",
-                                className: "md:col-span-1 md:row-span-2",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><Coffee className="h-6 w-6" /></div>
+                                className: "md:col-span-1 md:row-span-2 h-48 md:h-[420px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><Coffee className="h-6 w-6" /></div>
                             },
                             {
                                 name: "Bares",
                                 type: "bar",
                                 image: "https://plus.unsplash.com/premium_photo-1661695810257-35142e1415ca?q=80&w=880",
-                                className: "md:col-span-1 md:row-span-1",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><Martini className="h-6 w-6" /></div>
+                                className: "md:col-span-1 md:row-span-1 h-48 md:h-[200px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><Martini className="h-6 w-6" /></div>
                             },
                             {
                                 name: "Callejero",
                                 type: "callejero",
                                 image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80",
-                                className: "md:col-span-1 md:row-span-1",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><Footprints className="h-6 w-6" /></div>
+                                className: "md:col-span-1 md:row-span-1 h-48 md:h-[200px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><Footprints className="h-6 w-6" /></div>
                             },
                             {
                                 name: "Mercados",
                                 type: "mercado",
                                 image: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=600&q=80",
-                                className: "md:col-span-2 md:row-span-1",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><Store className="h-6 w-6" /></div>
+                                className: "md:col-span-2 md:row-span-1 h-48 md:h-[200px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><Store className="h-6 w-6" /></div>
                             },
                             {
                                 name: "Food Trucks",
                                 type: "food_truck",
                                 image: "https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?w=600&q=80",
-                                className: "md:col-span-2 md:row-span-1",
-                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white"><Truck className="h-6 w-6" /></div>
+                                className: "md:col-span-2 md:row-span-1 h-48 md:h-[200px]",
+                                icon: <div className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white w-fit flex items-center justify-center"><Truck className="h-6 w-6" /></div>
                             },
                         ].map((cat) => (
                             <Link
@@ -401,7 +402,7 @@ export default function Home() {
                     {loading ? <div className="h-64 bg-zinc-800 rounded-3xl animate-pulse" /> :
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {places.slice(0, 3).map((place) => (
-                                <PlaceListCard key={place._id + 'foryou'} place={place} /> // Assuming PlaceListCard styles can handle dark mode or are white cards
+                                <SelectionCard key={place._id + 'foryou'} place={place} />
                             ))}
                         </div>}
                 </section>

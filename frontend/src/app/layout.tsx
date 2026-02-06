@@ -12,6 +12,8 @@ import Footer from "@/components/layout/Footer";
 
 import { Providers } from "./providers";
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,6 +28,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <Toaster richColors position="bottom-center" />
         </Providers>
       </body>
     </html>

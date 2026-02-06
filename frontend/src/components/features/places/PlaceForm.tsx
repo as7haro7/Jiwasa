@@ -9,7 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 
 import {
     Loader2, Save, X, Upload, Plus, Trash, Copy,
-    Store, MapPin, Clock, Camera, Tag, CreditCard, Wifi, Phone, Globe, DollarSign, Info
+    Store, MapPin, Clock, Camera, Tag, CreditCard, Wifi, Phone, Globe, DollarSign, Info, Facebook, Instagram
 } from "lucide-react";
 import api from "@/lib/api";
 import { getFullImageUrl } from "@/lib/utils";
@@ -82,7 +82,7 @@ export default function PlaceForm({ initialData, isEditing = false }: PlaceFormP
         tiposComida: [] as string[],
         telefonoContacto: "",
         emailContacto: "",
-        redesSociales: [] as { platform: string, url: string }[],
+        redesSociales: {} as Record<string, string>,
         sitioWeb: "",
         rangoPrecios: "bajo",
         estado: "activo",
@@ -110,9 +110,11 @@ export default function PlaceForm({ initialData, isEditing = false }: PlaceFormP
                 metodosPago: initialData.metodosPago || [],
                 servicios: initialData.servicios || [],
                 // Handle migration from object to array for Social Media
-                redesSociales: Array.isArray(initialData.redesSociales)
-                    ? initialData.redesSociales
-                    : (initialData.redesSociales ? Object.entries(initialData.redesSociales).map(([k, v]) => ({ platform: k, url: v })) : []),
+                redesSociales: initialData.redesSociales
+                    ? (Array.isArray(initialData.redesSociales)
+                        ? initialData.redesSociales.reduce((acc: any, curr: any) => ({ ...acc, [curr.platform.toLowerCase()]: curr.url }), {})
+                        : initialData.redesSociales)
+                    : {},
                 horario: initialData.horario || {},
                 // Ensure arrays validation
                 tiposComida: initialData.tiposComida || [],
@@ -538,56 +540,53 @@ export default function PlaceForm({ initialData, isEditing = false }: PlaceFormP
                                 <div className="pt-4 border-t border-zinc-100">
                                     <label className="text-sm font-semibold mb-3 block text-zinc-700">Redes Sociales</label>
                                     <div className="space-y-3">
-                                        {Array.isArray(formData.redesSociales) && formData.redesSociales.map((red, index) => (
-                                            <div key={index} className="flex gap-2 items-start">
-                                                <div className="flex-1 space-y-2">
-                                                    <Input
-                                                        placeholder="Plataforma (ej: Facebook)"
-                                                        value={red.platform}
-                                                        onChange={(e) => {
-                                                            const newRedes = [...(formData.redesSociales as any[])];
-                                                            newRedes[index].platform = e.target.value;
-                                                            setFormData(p => ({ ...p, redesSociales: newRedes }));
-                                                        }}
-                                                        className="h-9 text-xs"
-                                                    />
-                                                    <Input
-                                                        placeholder="URL / Usuario"
-                                                        value={red.url}
-                                                        onChange={(e) => {
-                                                            const newRedes = [...(formData.redesSociales as any[])];
-                                                            newRedes[index].url = e.target.value;
-                                                            setFormData(p => ({ ...p, redesSociales: newRedes }));
-                                                        }}
-                                                        className="h-9 text-xs"
-                                                    />
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => {
-                                                        const newRedes = (formData.redesSociales as any[]).filter((_, i) => i !== index);
-                                                        setFormData(p => ({ ...p, redesSociales: newRedes }));
-                                                    }}
-                                                    className="mt-1 hover:bg-red-50 hover:text-red-500"
-                                                >
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
+                                        {/* Facebook */}
+                                        <div className="flex rounded-lg border border-zinc-200 bg-white items-center overflow-hidden focus-within:ring-2 focus-within:ring-[#1877F2]/20 focus-within:border-[#1877F2] transition-all group">
+                                            <div className="bg-[#1877F2]/5 text-[#1877F2] w-10 h-11 flex items-center justify-center border-r border-zinc-100 group-focus-within:bg-[#1877F2] group-focus-within:text-white transition-colors">
+                                                <Facebook className="h-5 w-5" />
                                             </div>
-                                        ))}
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setFormData(p => ({
-                                                ...p,
-                                                redesSociales: [...(Array.isArray(p.redesSociales) ? p.redesSociales : []), { platform: "", url: "" }]
-                                            }))}
-                                            className="w-full border-dashed"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" /> Agregar Red Social
-                                        </Button>
+                                            <input
+                                                className="flex h-11 w-full bg-transparent px-3 py-2 text-sm outline-none placeholder:text-zinc-400"
+                                                placeholder="facebook.com/pagina"
+                                                value={(formData.redesSociales as any)?.facebook || ""}
+                                                onChange={(e) => setFormData(p => ({
+                                                    ...p,
+                                                    redesSociales: { ...(p.redesSociales as any), facebook: e.target.value }
+                                                }))}
+                                            />
+                                        </div>
+
+                                        {/* Instagram */}
+                                        <div className="flex rounded-lg border border-zinc-200 bg-white items-center overflow-hidden focus-within:ring-2 focus-within:ring-[#E4405F]/20 focus-within:border-[#E4405F] transition-all group">
+                                            <div className="bg-[#E4405F]/5 text-[#E4405F] w-10 h-11 flex items-center justify-center border-r border-zinc-100 group-focus-within:bg-[#E4405F] group-focus-within:text-white transition-colors">
+                                                <Instagram className="h-5 w-5" />
+                                            </div>
+                                            <input
+                                                className="flex h-11 w-full bg-transparent px-3 py-2 text-sm outline-none placeholder:text-zinc-400"
+                                                placeholder="instagram.com/usuario"
+                                                value={(formData.redesSociales as any)?.instagram || ""}
+                                                onChange={(e) => setFormData(p => ({
+                                                    ...p,
+                                                    redesSociales: { ...(p.redesSociales as any), instagram: e.target.value }
+                                                }))}
+                                            />
+                                        </div>
+
+                                        {/* TikTok */}
+                                        <div className="flex rounded-lg border border-zinc-200 bg-white items-center overflow-hidden focus-within:ring-2 focus-within:ring-black/20 focus-within:border-black transition-all group">
+                                            <div className="bg-zinc-100 text-black w-10 h-11 flex items-center justify-center border-r border-zinc-100 group-focus-within:bg-black group-focus-within:text-white transition-colors">
+                                                <span className="font-bold text-xs">TK</span>
+                                            </div>
+                                            <input
+                                                className="flex h-11 w-full bg-transparent px-3 py-2 text-sm outline-none placeholder:text-zinc-400"
+                                                placeholder="tiktok.com/@usuario"
+                                                value={(formData.redesSociales as any)?.tiktok || ""}
+                                                onChange={(e) => setFormData(p => ({
+                                                    ...p,
+                                                    redesSociales: { ...(p.redesSociales as any), tiktok: e.target.value }
+                                                }))}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
