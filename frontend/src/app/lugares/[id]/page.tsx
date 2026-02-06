@@ -567,15 +567,15 @@ export default function PlaceDetailPage() {
                                 <div className="h-px bg-zinc-100" />
 
                                 {/* Services & Payments */}
-                                {(place.servicios?.length > 0 || place.metodosPago?.length > 0) && (
+                                {((place.servicios?.length ?? 0) > 0 || (place.metodosPago?.length ?? 0) > 0) && (
                                     <div className="space-y-6">
-                                        {place.servicios?.length > 0 && (
+                                        {(place.servicios?.length ?? 0) > 0 && (
                                             <div>
                                                 <div className="font-bold text-zinc-900 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
                                                     <Check className="h-4 w-4 text-emerald-600" /> Servicios
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    {place.servicios.map(s => {
+                                                    {place.servicios?.map(s => {
                                                         const key = s.toLowerCase().replace(/_/g, '');
                                                         const serviceConfig: Record<string, { icon: React.ReactNode, label: string }> = {
                                                             wifi: { icon: <Wifi className="h-4 w-4" />, label: 'WiFi Gratis' },
@@ -603,13 +603,13 @@ export default function PlaceDetailPage() {
                                             </div>
                                         )}
 
-                                        {place.metodosPago?.length > 0 && (
+                                        {(place.metodosPago?.length ?? 0) > 0 && (
                                             <div>
                                                 <div className="font-bold text-zinc-900 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
                                                     <CreditCard className="h-4 w-4 text-emerald-600" /> Métodos de Pago
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {place.metodosPago.map(p => {
+                                                    {place.metodosPago?.map(p => {
                                                         const key = p.toLowerCase();
                                                         const payConfig: Record<string, { icon: React.ReactNode, label: string }> = {
                                                             efectivo: { icon: <DollarSign className="h-3 w-3" />, label: 'Efectivo' },
